@@ -38,7 +38,7 @@ rows = bods.findAll('tr')
 for row in rows:
     if (row.find('th', {"scope":"row"}) != None):
         week = int(row.find("th",{"data-stat": "week_num"}).text)
-        if (week > 5):
+        if (week > 6):
             break
         winner = row.find("td",{"data-stat": "winner"}).text
         loser = row.find("td",{"data-stat": "loser"}).text
