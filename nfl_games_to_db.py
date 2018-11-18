@@ -12,20 +12,22 @@ DROP TABLE IF EXISTS Games;
 
 
 CREATE TABLE Games (
-    id                          INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
-    week                        INTEGER,
-    winner                      TEXT,
-    winning_team_home           INTEGER,
-    winning_score               INTEGER,
-    winning_team_sacks          INTEGER,
-    winning_team_fumbles        INTEGER,
-    winning_team_turnovers      INTEGER,
-    loser                       TEXT,
-    losing_team_home,           INTEGER,
-    losing_score                INTEGER,
-    losing_team_sacks           INTEGER,
-    losing_team_fumbles         INTEGER,
-    losing_team_turnovers       INTEGER
+    id                              INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+    week                            INTEGER,
+    winner                          TEXT,
+    winning_team_home               INTEGER,
+    winning_score                   INTEGER,
+    winning_team_sacks              INTEGER,
+    winning_team_fumbles_forced     INTEGER,
+    winning_team_fumbles_recovered  INTEGER,
+    winning_team_interceptions      INTEGER,
+    loser                           TEXT,
+    losing_team_home,               INTEGER,
+    losing_score                    INTEGER,
+    losing_team_sacks               INTEGER,
+    losing_team_fumbles_forced      INTEGER,
+    losing_team_fumbles_recovered   INTEGER,
+    losing_team_interceptions       INTEGER
 
 );
 
@@ -48,7 +50,7 @@ rows = bods.findAll('tr')
 for row in rows:
     if (row.find('th', {"scope":"row"}) != None):
         week = int(row.find("th",{"data-stat": "week_num"}).text)
-        if (week > 6):
+        if (week > 10):
             break
 
         # Get the winner and loser and their scores
@@ -91,21 +93,21 @@ for row in rows:
                 loser_sacks = stat_row.find("td", {"data-stat": loc_stat_loser}).text.split("-")[0]
                 
             if (stat_row.find('th').text == "Fumbles-Lost"):
-                winner_fumbles = stat_row.find("td", {"data-stat": loc_stat_winner}).text.split("-")[0]
-                loser_fumbles = stat_row.find("td", {"data-stat": loc_stat_loser}).text.split("-")[0]
+                winner_fumbles_forced = stat_row.find("td", {"data-stat": loc_stat_winner}).text.split("-")[0]
+                winner_fumbles_recovered = stat_row.find("td", {"data-stat": loc_stat_winner}).text.split("-")[1]
+                loser_fumbles_forced = stat_row.find("td", {"data-stat": loc_stat_loser}).text.split("-")[0]
+                loser_fumbles_recovered = stat_row.find("td", {"data-stat": loc_stat_loser}).text.split("-")[1]
 
             if (stat_row.find('th').text == "Turnovers"):
-                winner_turnovers = stat_row.find("td", {"data-stat": loc_stat_winner}).text
-                loser_turnovers = stat_row.find("td", {"data-stat": loc_stat_loser}).text
+                winner_interceptions = int(stat_row.find("td", {"data-stat": loc_stat_winner}).text) - int(winner_fumbles_recovered)
+                loser_interceptions = int(stat_row.find("td", {"data-stat": loc_stat_loser}).text) - int(loser_fumbles_recovered)
         
-        print(week, winner, pts_win, winning_team_home, winner_sacks, winner_fumbles, winner_turnovers,
-              loser, pts_lose, losing_team_home, loser_sacks, loser_fumbles, loser_turnovers, sep='    ')
+        print(week, winner, pts_win, winning_team_home, winner_sacks, winner_fumbles_forced, winner_fumbles_recovered, winner_interceptions,
+              loser, pts_lose, losing_team_home, loser_sacks, loser_fumbles_forced, loser_fumbles_recovered, loser_interceptions, sep='    ')
         cur.execute('''INSERT OR IGNORE INTO Games (week,
-                winner, winning_team_home, winning_score, winning_team_sacks, winning_team_fumbles,
-                winning_team_turnovers,
-                loser, losing_team_home, losing_score, losing_team_sacks, losing_team_fumbles,
-                losing_team_turnovers)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''', (week,
-                winner, winning_team_home, pts_win, winner_sacks, winner_fumbles, winner_turnovers,
-                loser, losing_team_home, pts_lose, loser_sacks, loser_fumbles, loser_turnovers) )
+                winner, winning_team_home, winning_score, winning_team_sacks, winning_team_fumbles_forced, winning_team_fumbles_recovered, winning_team_interceptions,
+                loser, losing_team_home, losing_score, losing_team_sacks, losing_team_fumbles_forced, losing_team_fumbles_recovered, losing_team_interceptions)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''', (week,
+                winner, winning_team_home, pts_win, winner_sacks, winner_fumbles_forced, winner_fumbles_recovered, winner_interceptions,
+                loser, losing_team_home, pts_lose, loser_sacks, loser_fumbles_forced, loser_fumbles_recovered, loser_interceptions) )
         conn.commit()
